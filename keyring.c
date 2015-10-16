@@ -21,6 +21,8 @@ unsigned char * receiveString();
 void blink(void);
 void USART_Flush(void);
 void updateState(void);
+void lock(void);
+void unlock(void);
 
 
 
@@ -52,31 +54,47 @@ return 0;
 
 }
 
+
+
 void updateState(void) {
 
 	unsigned char * command = receiveString(); //Recieve command from serial
 
 	command = command[strlen(command)-1] = 0; // STrips last char fro string (line break (\n))
 
-	if(strcmp(command, "abcdefg")) {
+	if(strcmp(command, "LOCK")) {
 
-		USART_putstring("HEEEYYYY UDEN BREAK!");
+		lock();
+		USART_putstring("LOCK!!!!");
+
+	} else if (strcmp(command, "UNLOCK")) {
 
 
-	} else if (strcmp(command, "abcdefg\n")) {
-
-
-		USART_putstring("HEEEYYYY MED BREAK!");
+		unlock();
+		USART_putstring("UNLOCK!!!!");
 
 
 
 	} else {
 
 
-		USART_putstring("HEEEYYYY NOGET ANDET!!!!!!?!");
-
 	}
 
+
+
+}
+
+
+
+void lock(void) {
+
+
+
+
+}
+
+
+void unlock(void) {
 
 
 
