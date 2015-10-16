@@ -14,13 +14,10 @@
 void USART_init(void);
 unsigned char USART_receive(void);
 void USART_send( unsigned char data);
-void USART_putstring(char* StringPtr);
+void USART_putstring(char * streng);
 
 
 
-
-
-char String[] = "abcdefg\n";    //String[] is in fact an array but when we put the text between the " " symbols the compiler threats it as a String and automatically puts the null termination character in the end of the text
 
 
 int main(void) {
@@ -36,9 +33,14 @@ _delay_ms(100);
 while(1) {
 
 
-	USART_putstring(String);    //Pass the string to the USART_putstring function and sends it over the serial
+	USART_putstring("LOCK\n");    //Pass the string to the USART_putstring function and sends it over the serial
 
-	_delay_ms(4000);
+	_delay_ms(10000);
+
+	USART_putstring("UNLOCK\n");
+
+	_delay_ms(10000);
+	
 }
 
 
@@ -69,13 +71,14 @@ void USART_init(void) {
 }
 
 
-void USART_putstring(char* StringPtr){
+void USART_putstring(char * streng){
 
-	for (int i = 0; i < strlen(String); i++){ 
+	for (int i = 0; i < strlen(streng); i++){ 
 
-		USART_send(String[i]);    //send string
+		USART_send(streng[i]);    //send string
 		
 		PORTC ^= _BV(PC0); //Makes status LED blink
+
 		_delay_ms(1);
 	}
 

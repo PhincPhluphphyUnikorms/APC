@@ -23,7 +23,8 @@ void USART_Flush(void);
 void updateState(void);
 void lock(void);
 void unlock(void);
-
+void servoInit(void);
+void init(void);
 
 
 char String[] = "BREAK!";    //String[] is in fact an array but when we put the text between the " " symbols the compiler threats it as a String and automatically puts the null termination character in the end of the text
@@ -34,14 +35,13 @@ int main(void) {
 
 
 //register magic move to own funvtion if too complex
-	DDRC |= _BV(DDC0);
+	DDRC |= _BV(DDC0); //SET PC0 to output
+	DDRC |= _BV(DDC1); //SET PC1 to output 
 
-USART_init();        //Call the USART initialization code
+init();        //Call the initialization code
 
 _delay_ms(100);
 
-
-//USART_putstring(String);
 
 while(1) {
 
@@ -56,18 +56,21 @@ return 0;
 
 
 
+
+
 void updateState(void) {
 
 	unsigned char * command = receiveString(); //Recieve command from serial
 
-	command = command[strlen(command)-1] = 0; // STrips last char fro string (line break (\n))
+	
+	//command = command[strlen(command)-1] = 0; // STrips last char fro string (line break (\n))
 
-	if(strcmp(command, "LOCK")) {
+	if(!strcmp(command, "LOCK")) {
 
 		lock();
-		USART_putstring("LOCK!!!!");
+		USART_putstring("LOCK!!");
 
-	} else if (strcmp(command, "UNLOCK")) {
+	} else if (!strcmp(command, "UNLOCK") == 1) {
 
 
 		unlock();
@@ -76,6 +79,9 @@ void updateState(void) {
 
 
 	} else {
+
+		USART_putstring("SOMETHING!!!!");
+
 
 
 	}
@@ -89,7 +95,14 @@ void updateState(void) {
 void lock(void) {
 
 
+	PORTC ^= _BV(PC1);//Turn on power to servo
 
+	OCR1A = 200;   //position furthest away from gear
+
+	_delay_ms(1500); // Give servo time to move
+
+	PORTC ^= _BV(PC1); //Turn off power to servo
+    
 
 }
 
@@ -97,36 +110,19 @@ void lock(void) {
 void unlock(void) {
 
 
+ 
+    PORTC ^= _BV(PC1); //Turn on power to servo
 
-}
-
-
-
-void USART_init(void) {
-
-
-	//UBRRH = (BAUD_PRESCALLER>>8);                      // shift the register right by 8 bits
-    //UBRRL = BAUD_PRESCALLER;                           // set baud rate
-    //UCSRB|= (1<<TXEN)|(1<<RXEN);      			// enable receiver and transmitter
-    //UCSRC|= (1<<URSEL)|(1<<UCSZ0)|(1<<UCSZ1);   // 8bit data format
-
-
-/* Set baud rate */
-	UBRRH = (unsigned char)(BAUD_PRESCALLER>>8);
-	UBRRL = (unsigned char)BAUD_PRESCALLER;
-/* Enable receiver and transmitter */
-	UCSRB = (1<<RXEN)|(1<<TXEN);
-
-
-	//not 2x speed !!!NEW!!!!
-	UCSRA &= ~_BV(U2X);
-
-/* Set frame format: 8data, 2stop bit */
-	UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
-	//USRC | = (1<<URSEL) | (1<<UCS21) | (1<<UCS20);	
+    OCR1A = 600;  //position closets to gear
+    
+    _delay_ms(1500); // Give servo time to move
+    
+    PORTC ^= _BV(PC1); //Turn off power to servo
 
 
 }
+
+
 
 
 void USART_putstring(char * streng){
@@ -173,7 +169,7 @@ while(1) {
 
 	if(dataread == 10) {
 
-		USART_putstring(String);
+		//USART_putstring(String);
 		break;
 
 	}
@@ -228,6 +224,57 @@ unsigned char dummy;
 while ( UCSRA & (1<<RXC) ) dummy = UDR;
 }
 
+
+
+
+
+void init(void) {
+
+	servoInit();
+	USART_init();
+
+
+
+}
+
+
+void USART_init(void) {
+
+/* Set baud rate */
+	UBRRH = (unsigned char)(BAUD_PRESCALLER>>8); 
+	UBRRL = (unsigned char)BAUD_PRESCALLER;		 
+/* Enable receiver and transmitter */
+	UCSRB = (1<<RXEN)|(1<<TXEN);
+
+
+/* not 2x speed !!!NEW!!!! */
+	UCSRA &= ~_BV(U2X);
+
+/* Set frame format: 8data, 2stop bit */
+	UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
+
+
+}
+
+void servoInit(void) {
+
+
+	/*FOR TIMER1*/
+
+
+   DDRB |= (1 << DDB1); // PB1 as output
+
+   TCCR1A |= (1 << COM1A1); // set non-inverting mode
+   TCCR1A |= (1 << WGM11) | (1 << WGM10); // set 10bit phase corrected PWM Mode
+   TCCR1B |= (1 << CS11); // set prescaler to 8 and starts PWM
+
+   ICR1=500;  //fPWM=50Hz
+
+
+
+
+
+}
 
 
 
