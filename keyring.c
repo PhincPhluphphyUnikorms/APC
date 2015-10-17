@@ -98,11 +98,15 @@ void updateState(void) {
 void lock(void) {
 
 
-	PORTC = _BV(PC1);//Turn on power to servo
+	PORTC ^= _BV(PC1);//Turn on power to servo
 
 	OCR1A = 190;   //position furthest away from gear
 
-	//PORTC >= _BV(PC1);//Turn on power to servo
+	_delay_ms(1000);
+
+
+
+	PORTC ^= _BV(PC1);//Turn on power to servo
 
 	
 
@@ -113,11 +117,11 @@ void unlock(void) {
 
 
  
-    PORTC = _BV(PC1); //Turn on power to servo
+    PORTC ^= _BV(PC1); //Turn on power to servo
 
     OCR1A = 750;  //position closets to gear
     
-    _delay_ms(3000);
+    _delay_ms(1000);
     
     PORTC ^= _BV(PC1); //Turn off power to servo
 
