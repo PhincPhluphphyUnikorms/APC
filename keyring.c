@@ -57,7 +57,10 @@ return 0;
 
 
 
-
+/**
+* Checks and changes state of keyring
+*
+*/
 void updateState(void) {
 
 	unsigned char * command = receiveString(); //Recieve command from serial
@@ -95,14 +98,13 @@ void updateState(void) {
 void lock(void) {
 
 
-	PORTC ^= _BV(PC1);//Turn on power to servo
+	PORTC = _BV(PC1);//Turn on power to servo
 
-	OCR1A = 200;   //position furthest away from gear
+	OCR1A = 190;   //position furthest away from gear
 
-	_delay_ms(1500); // Give servo time to move
+	//PORTC >= _BV(PC1);//Turn on power to servo
 
-	PORTC ^= _BV(PC1); //Turn off power to servo
-    
+	
 
 }
 
@@ -111,11 +113,11 @@ void unlock(void) {
 
 
  
-    PORTC ^= _BV(PC1); //Turn on power to servo
+    PORTC = _BV(PC1); //Turn on power to servo
 
-    OCR1A = 600;  //position closets to gear
+    OCR1A = 750;  //position closets to gear
     
-    _delay_ms(1500); // Give servo time to move
+    _delay_ms(3000);
     
     PORTC ^= _BV(PC1); //Turn off power to servo
 

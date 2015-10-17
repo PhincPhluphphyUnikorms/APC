@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
-#include <avr/interrupt.h>  
+#include <avr/interrupt.h> 
+#include <stdbool.h> 
 
 #define F_CPU 4000000UL
 #define BAUD 9600       //The baudrate that we want to use
@@ -15,6 +16,9 @@ void USART_init(void);
 unsigned char USART_receive(void);
 void USART_send( unsigned char data);
 void USART_putstring(char * streng);
+void lock(void);
+void unlock(void);
+void changestate(int state);
 
 
 
@@ -25,27 +29,62 @@ int main(void) {
 
 //register magic move to own funvtion if too complex
 	DDRC |= _BV(DDC0);
+	PORTC = _BV(PC1);
 
 USART_init();        //Call the USART initialization code
 
 _delay_ms(100);
 
+
+int old;
 while(1) {
 
 
-	USART_putstring("LOCK\n");    //Pass the string to the USART_putstring function and sends it over the serial
+	int new = bit_is_clear(PINC, 1);
 
-	_delay_ms(10000);
+	//USART_putstring( bit_is_clear(PINC, 1));
 
-	USART_putstring("UNLOCK\n");
+	if(new != old){
 
-	_delay_ms(10000);
-	
+		changestate(new);
+	}
+
+	old = new; 
+
+	_delay_ms(4000);
+
 }
 
 
  return 0;
 
+}
+
+
+void changestate(int state){
+
+	if (state) { // runs if reed switch is on the run
+
+		lock();
+
+	} else {
+
+		unlock();
+	}
+
+
+
+}
+
+void lock(void) {
+
+	USART_putstring("LOCK\n");    //Pass the string to the USART_putstring function and sends it over the serial
+
+}
+
+void unlock(void){
+
+	USART_putstring("UNLOCK\n");	
 }
 
 
