@@ -121,7 +121,7 @@ void unlock(void) {
 
     OCR1A = 750;  //position closets to gear
     
-    _delay_ms(1000);
+    _delay_ms(2000);
     
     PORTC ^= _BV(PC1); //Turn off power to servo
 

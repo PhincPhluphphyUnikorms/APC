@@ -11,7 +11,7 @@
 
 
 
-//Declaration of our functions probably to now havce to put them in reverse order?!
+//Declaration of our functions 
 void USART_init(void);
 unsigned char USART_receive(void);
 void USART_send( unsigned char data);
@@ -19,26 +19,54 @@ void USART_putstring(char * streng);
 void lock(void);
 void unlock(void);
 void changestate(int state);
-
+void sleep(void);
+void wake(void);
+void PIN_init(void);
+int checkDoor(int old);
+void checkPIR(void);
 
 
 
 
 int main(void) {
 
-
-//register magic move to own funvtion if too complex
-	DDRC |= _BV(DDC0);
-	PORTC = _BV(PC1);
+PIN_init();
 
 USART_init();        //Call the USART initialization code
 
 _delay_ms(100);
 
-
 int old;
 while(1) {
 
+	old = checkDoor(old);
+
+	checkPIR();
+
+}
+
+
+ return 0;
+
+}
+
+void checkPIR(void){
+
+
+	if(bit_is_set(PINC, 2)){
+
+
+		USART_putstring("HEEEY MENNESKER");
+		PORTC ^= _BV(PC0);
+        _delay_ms(100);
+        PORTC ^= _BV(PC0);
+        _delay_ms(100);
+	}
+
+
+}
+
+int checkDoor(int old){
 
 	int new = bit_is_clear(PINC, 1);
 
@@ -49,17 +77,10 @@ while(1) {
 		changestate(new);
 	}
 
-	old = new; 
+	return old;
 
 	_delay_ms(4000);
-
 }
-
-
- return 0;
-
-}
-
 
 void changestate(int state){
 
@@ -76,6 +97,7 @@ void changestate(int state){
 
 }
 
+
 void lock(void) {
 
 	USART_putstring("LOCK\n");    //Pass the string to the USART_putstring function and sends it over the serial
@@ -87,7 +109,29 @@ void unlock(void){
 	USART_putstring("UNLOCK\n");	
 }
 
+void sleep(void){
 
+	USART_putstring("$$$"); // put in command mode
+
+	_delay_ms(100);
+	
+	USART_putstring("Q\n"); // Q for quite mode = ingen forbindelse til andre moduler
+
+	_delay_ms(100);
+
+	USART_putstring("Z\n"); //Z for low-power mode
+
+	_delay_ms(100);
+
+
+}
+
+void wake(void){
+
+	USART_putstring("R,1\n"); // Reboot to wake up
+	_delay_ms(100);
+
+}
 
 void USART_init(void) {
 
@@ -106,6 +150,15 @@ void USART_init(void) {
 /* Set frame format: 8data, 2stop bit */
 	UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
 
+
+}
+
+void PIN_init(void){
+
+//register magic move to own funvtion if too complex
+	DDRC |= _BV(DDC0);
+	PORTC = _BV(PC1);
+	DDRC |= _BV(PC2); // PC2 as input
 
 }
 
